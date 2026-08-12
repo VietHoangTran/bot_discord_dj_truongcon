@@ -46,11 +46,19 @@ client.on('interactionCreate', async (interaction) => {
           return interaction.editReply('❌ Bạn đang ở **Stage Channel**. Bot chỉ hoạt động với **Voice Channel** thường. Hãy tạo/đổi sang Voice Channel (mặc định) rồi thử lại.');
         }
 
-        await distube.play(voiceChannel, query, {
+        // Làm sạch link YouTube (bỏ tham số ?si=, &list=RD..., &start_radio=, ?t=...)
+        let cleanQuery = query;
+        const ytMatch = query.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/);
+        if (ytMatch) {
+          cleanQuery = `https://www.youtube.com/watch?v=${ytMatch[1]}`;
+          console.log(`[PLAY] Link làm sạch: ${query} -> ${cleanQuery}`);
+        }
+
+        await distube.play(voiceChannel, cleanQuery, {
           textChannel: interaction.channel,
           member,
         });
-        await interaction.editReply(`🔎 Đang tìm: **${query}**`);
+        await interaction.editReply(`🔎 Đang tìm: **${cleanQuery}**`);
         break;
       }
 
