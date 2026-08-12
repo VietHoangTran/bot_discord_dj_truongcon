@@ -2,11 +2,14 @@
 
 Bot Discord phát nhạc từ **YouTube** và **SoundCloud**, xây dựng bằng **Node.js + discord.js v14 + DisTube**. Hỗ trợ slash commands, phù hợp cho bot cá nhân/server nhỏ.
 
+> ⚠️ **Lưu ý về YouTube (08/2026):** YouTube đã đổi player script mới, hiện `@distube/ytdl-core` chưa parse được decipher function (issue [#144](https://github.com/distubejs/ytdl-core/issues/144)) → lệnh `/play` từ link/tên YouTube có thể báo `NOT_SUPPORTED_URL`. **SoundCloud vẫn hoạt động bình thường.** Khi ytdl-core update, chạy `npm update @distube/ytdl-core` rồi push lại là YouTube chạy tiếp.
+
 ## ✨ Tính năng
 
 - ▶️ `/play <tên bài hát hoặc link>` — phát nhạc từ YouTube hoặc SoundCloud
-  - Nhập **URL YouTube/SoundCloud** → phát trực tiếp bài/playlist đó
-  - Nhập **tên bài hát** → tự tìm kiếm trên YouTube
+  - Nhập **URL SoundCloud** → phát trực tiếp (đang hoạt động ✅)
+  - Nhập **URL YouTube** → phát trực tiếp (đang chờ ytdl-core fix, xem lưu ý trên)
+  - Nhập **tên bài hát** → tự tìm kiếm trên YouTube (phụ thuộc ytdl-core)
 - ⏭️ `/skip` — bỏ qua bài hiện tại
 - ⏹️ `/stop` — dừng nhạc và rời voice channel
 - ⏸️ `/pause` — tạm dừng bài hát
@@ -153,6 +156,8 @@ pm2 stop music-bot      # dừng
 |-----|-------------|------------|
 | Bot join voice nhưng không có tiếng | Thiếu FFmpeg hoặc @discordjs/opus | `sudo apt install ffmpeg`, kiểm tra `npm list @discordjs/opus` |
 | Lỗi 403/410 khi play | YouTube đổi cơ chế chống bot | `npm update @distube/ytdl-core distube`, hoặc thử `play-dl` |
+| `NOT_SUPPORTED_URL` với link YouTube | YouTube đổi player script, ytdl-core chưa fix decipher (08/2026) | Chờ `@distube/ytdl-core` update (theo issue #144), hoặc dùng link SoundCloud trong lúc chờ |
+| Voice stuck "signalling" / timeout 30s | Node/quyền/encryption | Dùng Node 22 + `@discordjs/voice` 0.19+ + `libsodium-wrappers` (đã cấu hình) |
 | Slash command không hiện | Chưa chạy deploy-commands.js | Chạy lại `npm run deploy` |
 | Missing Access / bot không join được voice | Thiếu quyền Connect/Speak | Kiểm tra lại quyền của role bot trong server |
 
