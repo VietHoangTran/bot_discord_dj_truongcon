@@ -18,7 +18,7 @@ const distube = new DisTube(client, {
   plugins: [new SoundCloudPlugin()],
 });
 
-client.once('ready', () => {
+client.once('clientReady', () => {
   console.log(`Bot đã online: ${client.user.tag}`);
 });
 
@@ -30,7 +30,7 @@ client.on('interactionCreate', async (interaction) => {
   const voiceChannel = member.voice.channel;
 
   if (['play', 'skip', 'stop', 'pause', 'resume'].includes(commandName) && !voiceChannel) {
-    return interaction.reply({ content: '⚠️ Bạn cần vào voice channel trước.', ephemeral: true });
+    return interaction.reply({ content: '⚠️ Bạn cần vào voice channel trước.', flags: 64 });
   }
 
   try {
@@ -38,11 +38,22 @@ client.on('interactionCreate', async (interaction) => {
       case 'play': {
         const query = options.getString('query');
         await interaction.deferReply();
+
+        // Chẩn đoán voice channel
+        console.log(`[DEBUG] Voice channel: id=${voiceChannel.id} name="${voiceChannel.name}" type=${voiceChannel.type}`);
+        const botMember = await interaction.guild.members.fetchMe();
+        const perms = voiceChannel.permissionsFor(botMember);
+        console.log(`[DEBUG] Bot perms trong channel -> Connect: ${perms?.has('Connect')}, Speak: ${perms?.has('Speak')}, ViewChannel: ${perms?.has('ViewChannel')}`);
+
+        if (voiceChannel.type === 13) {
+          return interaction.editReply('❌ Bạn đang ở **Stage Channel**. Bot chỉ hoạt động với **Voice Channel** thường. Hãy tạo/đổi sang Voice Channel (mặc định) rồi thử lại.');
+        }
+
         await distube.play(voiceChannel, query, {
           textChannel: interaction.channel,
           member,
         });
-        await interaction.editReply(`🔎 Đang tìm: **${query}**`); // Tự nhận diện YouTube/SoundCloud qua URL, hoặc tìm kiếm trên YouTube nếu chỉ nhập tên
+        await interaction.editReply(`🔎 Đang tìm: **${query}**`);
         break;
       }
 
@@ -80,7 +91,10 @@ client.on('interactionCreate', async (interaction) => {
     }
   } catch (err) {
     console.error(err);
-    const msg = '❌ Có lỗi xảy ra, thử lại sau.';
+    let msg = '❌ Có lỗi xảy ra, thử lại sau.';
+    if (err.errorCode === 'VOICE_CONNECT_FAILED') {
+      msg = '❌ Bot không vào được voice channel. Kiểm tra bot có quyền **Connect** và **Speak** trong server (Server Settings → Roles → bot role), và bạn đang ở trong voice channel.';
+    }
     interaction.deferred ? interaction.editReply(msg) : interaction.reply(msg);
   }
 });

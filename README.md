@@ -75,6 +75,45 @@ npm start        # chạy bot
 
 Vào Discord, gõ `/play tên bài hát` trong kênh text để test.
 
+## ☁️ Deploy lên Railway (nhanh nhất, chạy 24/7)
+
+> Đặc biệt hữu ích nếu máy dev bị VPN/firewall chặn UDP voice của Discord — server Railway ở datacenter nên UDP không bị chặn.
+
+### 1. Chuẩn bị
+- Đã push code lên GitHub repo
+- Đã có sẵn file `Dockerfile` + `railway.json` trong repo
+
+### 2. Tạo project trên Railway
+1. Vào [railway.app](https://railway.app) → đăng nhập bằng GitHub
+2. **New Project** → **Deploy from GitHub repo** → chọn repo `bot_discord_vince`
+3. Railway tự nhận `Dockerfile` và build
+
+### 3. Cấu hình biến môi trường
+Trong dashboard Railway → tab **Variables** → thêm:
+```
+DISCORD_TOKEN = <bot token>
+CLIENT_ID     = 1537119940362899516
+GUILD_ID      = <id server test>
+```
+> ⚠️ **Quan trọng:** nếu trước đó đã chạy `npm run deploy` để đăng ký slash commands vào guild, các lệnh đã được đăng ký rồi → **không cần chạy lại `deploy` trên Railway**. Nếu chưa, xem cách đăng ký ở cuối phần này.
+
+### 4. Deploy & xem log
+- Railway tự build + deploy khi có biến môi trường
+- Tab **Deployments** → xem log, chờ dòng `Bot đã online: ...`
+- Bot online → vào Discord test `/play`
+
+### Đăng ký slash commands (nếu chưa)
+Railway chạy container bot chứ không chạy `deploy-commands.js` tự động. 2 cách:
+- **Cách 1 (đơn giản):** chạy `npm run deploy` trên **máy dev** (1 lần) trước khi deploy lên Railway — lệnh đăng ký vào server, không phụ thuộc bot chạy ở đâu.
+- **Cách 2:** trong dashboard Railway → **Settings → Start Command** tạm đổi thành `node src/deploy-commands.js && node src/index.js` (chạy 1 lần để đăng ký, rồi đổi lại `node src/index.js`).
+
+### Lưu ý về Railway
+- **Free trial**: ~$5 credit / 500 giờ dùng thử (bot idle tốn rất ít, test được nhiều tuần)
+- Hết trial → cần gói Hobby ($5/tháng) để tiếp tục
+- Bot Discord music cần FFmpeg + opus → `Dockerfile` đã cài sẵn
+
+---
+
 ## 🖥️ Deploy lên VPS chạy 24/7
 
 Cấu hình VPS gợi ý: **1 vCPU, 1GB RAM, 10GB SSD**.
