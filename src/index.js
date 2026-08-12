@@ -20,8 +20,10 @@ const distube = new DisTube(client, {
   emitNewSongOnly: true,
   nsfw: false,
   // YtDlpPlugin phải nằm CUỐI mảng plugins (theo docs). Dùng binary yt-dlp
-  // (update tự động) thay cho @distube/ytdl-core để né lỗi decipher của YouTube.
-  plugins: [new SoundCloudPlugin(), new YtDlpPlugin({ update: true })],
+  // (đã có sẵn trong /usr/local/bin hoặc PATH) thay cho @distube/ytdl-core để
+  // né lỗi decipher của YouTube. update:false -> không tự download từ GitHub
+  // lúc runtime (Railway hay bị rate-limit/403).
+  plugins: [new SoundCloudPlugin(), new YtDlpPlugin({ update: false })],
 });
 
 client.once('clientReady', () => {

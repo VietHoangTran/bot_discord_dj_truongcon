@@ -11,17 +11,19 @@ RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
       -o /usr/local/bin/yt-dlp \
     && chmod +x /usr/local/bin/yt-dlp
 
-# Báo cho @distube/yt-dlp dùng binary hệ thống, KHÔNG download lúc npm ci
-ENV YTDLP_DISABLE_DOWNLOAD=true
+# Trỏ @distube/yt-dlp tới binary hệ thống (trong /usr/local/bin/yt-dlp).
 ENV YTDLP_DIR=/usr/local/bin
 ENV YTDLP_FILENAME=yt-dlp
 
 # Thư mục làm việc
 WORKDIR /app
 
-# Copy package files và cài dependencies
+# Copy package files và cài dependencies.
+# --ignore-scripts: bỏ postinstall của @distube/yt-dlp (cố download yt-dlp từ GitHub,
+# bị Railway rate-limit/403). Binary yt-dlp đã có sẵn ở /usr/local/bin từ bước trên.
+# Opus được rebuild riêng ở bước sau.
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY . .
