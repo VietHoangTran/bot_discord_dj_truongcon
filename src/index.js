@@ -4,6 +4,9 @@ const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 
+// Khởi tạo libsodium cho mã hóa voice (tránh timeout 30s do thiếu encryptor)
+require('libsodium-wrappers');
+
 // Debug biến môi trường (an toàn: chỉ in độ dài, không in token)
 const token = process.env.DISCORD_TOKEN;
 console.log(`[ENV] DISCORD_TOKEN: ${token ? `có (độ dài ${token.length}, bắt đầu "${token.slice(0, 10)}...")` : 'THIẾU/RỖNG'}`);
@@ -23,6 +26,15 @@ const distube = new DisTube(client, {
   nsfw: false,
   plugins: [new SoundCloudPlugin()],
 });
+
+// Bắt sự kiện voice connection toàn cục để debug
+const { getVoiceConnections, VoiceConnectionStatus } = require('@discordjs/voice');
+setInterval(() => {
+  const conns = getVoiceConnections();
+  conns.forEach((conn, guildId) => {
+    console.log(`[VOICE] guild ${guildId}: state=${conn.state.status}`);
+  });
+}, 5000);
 
 client.once('clientReady', () => {
   console.log(`Bot đã online: ${client.user.tag}`);
