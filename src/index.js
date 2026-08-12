@@ -4,6 +4,12 @@ const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 
+// Debug biến môi trường (an toàn: chỉ in độ dài, không in token)
+const token = process.env.DISCORD_TOKEN;
+console.log(`[ENV] DISCORD_TOKEN: ${token ? `có (độ dài ${token.length}, bắt đầu "${token.slice(0, 10)}...")` : 'THIẾU/RỖNG'}`);
+console.log(`[ENV] CLIENT_ID: ${process.env.CLIENT_ID || 'THIẾU'}`);
+console.log(`[ENV] GUILD_ID: ${process.env.GUILD_ID || 'không có (OK cho global)'}`);
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
