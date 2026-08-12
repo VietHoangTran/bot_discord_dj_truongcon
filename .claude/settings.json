@@ -1,0 +1,9 @@
+{
+    "env": {
+        "ANTHROPIC_BASE_URL": "http://localhost:20128",
+        "ANTHROPIC_AUTH_TOKEN": "sk-29aab2bfe0b0854e-95c982-26bc3b4d",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "ollamacloud/glm-5.2[1m]",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "ollamacloud/deepseek-v4-flash:0731[1m]",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ollamacloud/qwen3.5:397b"
+    }
+}

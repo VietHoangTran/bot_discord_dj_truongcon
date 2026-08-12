@@ -1,0 +1,32 @@
+{
+  "name": "discord-music-bot",
+  "version": "1.0.0",
+  "description": "Discord Music Bot phát nhạc từ YouTube (discord.js v14 + DisTube)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "deploy": "node src/deploy-commands.js"
+  },
+  "keywords": [
+    "discord",
+    "music",
+    "bot",
+    "distube",
+    "youtube"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/opus": "^0.9.0",
+    "@discordjs/voice": "^0.18.0",
+    "@distube/ytdl-core": "^4.16.0",
+    "discord.js": "^14.16.0",
+    "distube": "^5.0.0",
+    "dotenv": "^16.4.0",
+    "ffmpeg-static": "^5.2.0"
+  },
+  "allowScripts": {
+    "@discordjs/opus@0.9.0": true,
+    "ffmpeg-static@5.3.0": true
+  }
+}
