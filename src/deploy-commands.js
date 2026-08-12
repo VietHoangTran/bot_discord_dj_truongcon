@@ -5,9 +5,9 @@ const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 const commands = [
   new SlashCommandBuilder()
     .setName('play')
-    .setDescription('Phát nhạc từ YouTube (tên bài hát hoặc link)')
+    .setDescription('Phát nhạc từ YouTube hoặc SoundCloud (tên bài hát hoặc link)')
     .addStringOption(opt =>
-      opt.setName('query').setDescription('Tên bài hát hoặc URL YouTube').setRequired(true)),
+      opt.setName('query').setDescription('Tên bài hát hoặc URL YouTube/SoundCloud').setRequired(true)),
   new SlashCommandBuilder().setName('skip').setDescription('Bỏ qua bài hiện tại'),
   new SlashCommandBuilder().setName('stop').setDescription('Dừng nhạc và rời voice channel'),
   new SlashCommandBuilder().setName('pause').setDescription('Tạm dừng bài hát'),

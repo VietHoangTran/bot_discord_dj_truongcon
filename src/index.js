@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { DisTube } = require('distube');
+const { SoundCloudPlugin } = require('@distube/soundcloud');
 
 const client = new Client({
   intents: [
@@ -14,6 +15,7 @@ const client = new Client({
 const distube = new DisTube(client, {
   emitNewSongOnly: true,
   nsfw: false,
+  plugins: [new SoundCloudPlugin()],
 });
 
 client.once('ready', () => {
@@ -40,7 +42,7 @@ client.on('interactionCreate', async (interaction) => {
           textChannel: interaction.channel,
           member,
         });
-        await interaction.editReply(`🔎 Đang tìm: **${query}**`);
+        await interaction.editReply(`🔎 Đang tìm: **${query}**`); // Tự nhận diện YouTube/SoundCloud qua URL, hoặc tìm kiếm trên YouTube nếu chỉ nhập tên
         break;
       }
 

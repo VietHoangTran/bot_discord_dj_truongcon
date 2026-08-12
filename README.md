@@ -1,10 +1,12 @@
 # 🎵 Discord Music Bot
 
-Bot Discord phát nhạc từ YouTube, xây dựng bằng **Node.js + discord.js v14 + DisTube**. Hỗ trợ slash commands, phù hợp cho bot cá nhân/server nhỏ.
+Bot Discord phát nhạc từ **YouTube** và **SoundCloud**, xây dựng bằng **Node.js + discord.js v14 + DisTube**. Hỗ trợ slash commands, phù hợp cho bot cá nhân/server nhỏ.
 
 ## ✨ Tính năng
 
-- ▶️ `/play <tên bài hát hoặc link>` — phát nhạc từ YouTube
+- ▶️ `/play <tên bài hát hoặc link>` — phát nhạc từ YouTube hoặc SoundCloud
+  - Nhập **URL YouTube/SoundCloud** → phát trực tiếp bài/playlist đó
+  - Nhập **tên bài hát** → tự tìm kiếm trên YouTube
 - ⏭️ `/skip` — bỏ qua bài hiện tại
 - ⏹️ `/stop` — dừng nhạc và rời voice channel
 - ⏸️ `/pause` — tạm dừng bài hát
@@ -20,6 +22,7 @@ Bot Discord phát nhạc từ YouTube, xây dựng bằng **Node.js + discord.js
 | @discordjs/opus | Encode audio đúng chuẩn Discord |
 | distube | Xử lý sẵn queue, play/skip/stop |
 | @distube/ytdl-core | Lấy stream nhạc từ YouTube |
+| @distube/soundcloud | Phát nhạc từ SoundCloud (URL track/playlist) |
 | dotenv | Đọc biến môi trường từ .env |
 | ffmpeg-static | Backup binary FFmpeg |
 
