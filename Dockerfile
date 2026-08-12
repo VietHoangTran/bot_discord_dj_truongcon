@@ -1,6 +1,6 @@
 # Dockerfile cho Discord Music Bot (Railway / bất kỳ cloud nào)
-# Dùng Node 20 LTS (ổn định với @discordjs/opus hơn Node 24)
-FROM node:20-bookworm
+# Dùng Node 22 (yêu cầu của @discordjs/voice 0.19 + distube 5.2)
+FROM node:22-bookworm
 
 # Cài FFmpeg hệ thống (bắt buộc để encode audio) + libsodium (mã hóa voice)
 RUN apt-get update && apt-get install -y ffmpeg libsodium23 && rm -rf /var/lib/apt/lists/*
