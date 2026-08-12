@@ -18,6 +18,5 @@ COPY . .
 # Đảm bảo opus build đúng
 RUN npm rebuild @discordjs/opus
 
-# Chạy bot (bật debug voice + distube để chẩn đoán voice timeout)
-ENV DEBUG="@discordjs/voice*,distube*"
+# Chạy bot
 CMD ["node", "src/index.js"]
