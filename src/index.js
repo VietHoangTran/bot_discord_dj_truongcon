@@ -3,6 +3,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
 
 // Khởi tạo libsodium cho mã hóa voice (tránh timeout 30s do thiếu encryptor)
 require('libsodium-wrappers');
@@ -18,7 +19,9 @@ const client = new Client({
 const distube = new DisTube(client, {
   emitNewSongOnly: true,
   nsfw: false,
-  plugins: [new SoundCloudPlugin()],
+  // YtDlpPlugin phải nằm CUỐI mảng plugins (theo docs). Dùng binary yt-dlp
+  // (update tự động) thay cho @distube/ytdl-core để né lỗi decipher của YouTube.
+  plugins: [new SoundCloudPlugin(), new YtDlpPlugin({ update: true })],
 });
 
 client.once('clientReady', () => {
