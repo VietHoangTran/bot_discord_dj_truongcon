@@ -7,6 +7,15 @@ const { SoundCloudPlugin } = require('@distube/soundcloud');
 // Khởi tạo libsodium cho mã hóa voice (tránh timeout 30s do thiếu encryptor)
 require('libsodium-wrappers');
 
+// Bật debug logging trực tiếp (không phụ thuộc ENV DEBUG)
+const debugLog = (...args) => console.log('[DEBUG-V]', ...args);
+try {
+  const { VoiceConnectionStatus } = require('@discordjs/voice');
+  debugLog('VoiceConnectionStatus states:', Object.keys(VoiceConnectionStatus).join(','));
+} catch (e) {
+  debugLog('@discordjs/voice load error:', e.message);
+}
+
 // Debug biến môi trường (an toàn: chỉ in độ dài, không in token)
 const token = process.env.DISCORD_TOKEN;
 console.log(`[ENV] DISCORD_TOKEN: ${token ? `có (độ dài ${token.length}, bắt đầu "${token.slice(0, 10)}...")` : 'THIẾU/RỖNG'}`);
@@ -66,6 +75,32 @@ client.on('interactionCreate', async (interaction) => {
         if (voiceChannel.type === 13) {
           return interaction.editReply('❌ Bạn đang ở **Stage Channel**. Bot chỉ hoạt động với **Voice Channel** thường. Hãy tạo/đổi sang Voice Channel (mặc định) rồi thử lại.');
         }
+
+        // TEST: thử join trực tiếp bằng @discordjs/voice trước khi gọi DisTube
+        console.log('[DEBUG-V] Thử join voice trực tiếp bằng @discordjs/voice...');
+        const { joinVoiceChannel, VoiceConnectionStatus, getVoiceConnection } = require('@discordjs/voice');
+        const testConn = joinVoiceChannel({
+          channelId: voiceChannel.id,
+          guildId: interaction.guild.id,
+          adapterCreator: interaction.guild.voiceAdapterCreator,
+          selfDeaf: false,
+          selfMute: false,
+        });
+        const joinStart = Date.now();
+        let joined = false;
+        testConn.on(VoiceConnectionStatus.Ready, () => { joined = true; console.log(`[DEBUG-V] ✅ @discordjs/voice JOIN OK sau ${((Date.now()-joinStart)/1000).toFixed(1)}s`); });
+        testConn.on(VoiceConnectionStatus.Connecting, () => console.log('[DEBUG-V] connecting...'));
+        testConn.on(VoiceConnectionStatus.Signalling, () => console.log('[DEBUG-V] signalling...'));
+        testConn.on('error', (e) => console.log('[DEBUG-V] conn error:', e.message));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        console.log('[DEBUG-V] Sau 5s, joined =', joined);
+        if (!joined) {
+          console.log('[DEBUG-V] ❌ @discordjs/voice cũng không join được -> lỗi voice layer, không phải DisTube');
+          return interaction.editReply('❌ Lỗi voice layer (không phải DisTube). Xem log [DEBUG-V] để chẩn đoán.');
+        }
+        // Nếu join OK, detach test conn và để DisTube tự join
+        testConn.destroy();
+        console.log('[DEBUG-V] @discordjs/voice OK, giờ gọi DisTube...');
 
         await distube.play(voiceChannel, query, {
           textChannel: interaction.channel,
