@@ -66,6 +66,11 @@ GUILD_ID=id_server_test_của_bạn
 - `CLIENT_ID`: lấy ở tab **General Information**
 - `GUILD_ID`: bật **Developer Mode** trong Discord (Cài đặt → Advanced) → chuột phải server → **Copy Server ID**
 
+> **Về GUILD_ID:** Biến này chỉ dùng khi **đăng ký slash commands** (chạy `npm run deploy`), **không giới hạn bot tham gia server**. Bot vào server nào tùy lúc bạn invite.
+> - **Có GUILD_ID** → lệnh `/play` chỉ đăng ký vào 1 server đó (hiện ngay, dùng để test)
+> - **Bỏ trống GUILD_ID** → lệnh đăng ký **global** (hiện ở mọi server bot tham gia, nhưng mất tới 1 giờ cập nhật)
+> - Muốn bot dùng cho nhiều server → sau khi test OK, xóa/bỏ trống `GUILD_ID` rồi chạy lại `npm run deploy` để đăng ký global.
+
 ### 4. Đăng ký slash commands & chạy bot
 
 ```bash
@@ -93,9 +98,10 @@ Trong dashboard Railway → tab **Variables** → thêm:
 ```
 DISCORD_TOKEN = <bot token>
 CLIENT_ID     = 1537119940362899516
-GUILD_ID      = <id server test>
+GUILD_ID      = <id server test>   ← có thể bỏ qua nếu đã đăng ký global commands
 ```
-> ⚠️ **Quan trọng:** nếu trước đó đã chạy `npm run deploy` để đăng ký slash commands vào guild, các lệnh đã được đăng ký rồi → **không cần chạy lại `deploy` trên Railway**. Nếu chưa, xem cách đăng ký ở cuối phần này.
+> **GUILD_ID trên Railway:** Chỉ cần thiết nếu bạn muốn chạy `deploy-commands.js` trên Railway (đăng ký guild command). Nếu đã đăng ký **global commands** (xem phần "Về GUILD_ID" ở trên) thì **bỏ GUILD_ID** — lệnh sẽ dùng được ở mọi server bot tham gia.
+> ⚠️ **Quan trọng:** nếu trước đó đã chạy `npm run deploy` để đăng ký slash commands, các lệnh đã được đăng ký rồi → **không cần chạy lại `deploy` trên Railway**.
 
 ### 4. Deploy & xem log
 - Railway tự build + deploy khi có biến môi trường
