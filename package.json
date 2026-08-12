@@ -18,7 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "@discordjs/opus": "^0.9.0",
-    "@discordjs/voice": "^0.18.0",
+    "@discordjs/voice": "^0.19.2",
     "@distube/soundcloud": "^2.0.4",
     "@distube/ytdl-core": "^4.16.0",
     "discord.js": "^14.16.0",
@@ -26,6 +26,7 @@
     "dotenv": "^16.4.0",
     "ffmpeg-static": "^5.2.0",
     "libsodium-wrappers": "^0.8.4",
+    "sodium-native": "^5.1.0",
     "tweetnacl": "^1.0.3"
   },
   "allowScripts": {
