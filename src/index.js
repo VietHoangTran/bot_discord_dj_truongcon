@@ -62,6 +62,13 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName, member, options } = interaction;
+
+  // Guard: interaction phải đến từ guild và có member (tránh crash khi dùng
+  // trong DM hoặc guild chưa cache member -> member undefined).
+  if (!interaction.inGuild() || !member) {
+    return interaction.reply({ content: '⚠️ Lệnh này chỉ dùng được trong server.', flags: 64 });
+  }
+
   const voiceChannel = member.voice.channel;
 
   if (['play', 'skip', 'stop', 'pause', 'resume'].includes(commandName) && !voiceChannel) {
@@ -165,5 +172,10 @@ distube
   .on('finish', (queue) => {
     queue.textChannel?.send('📭 Hết bài trong hàng chờ.');
   });
+
+// Bắt lỗi để bot không crash: nếu interaction handler hoặc sự kiện nào đó
+// ném lỗi không được await, log thay vì để process thoát.
+client.on('error', (err) => console.error('[client error]', err));
+process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', err));
 
 client.login(process.env.DISCORD_TOKEN);
