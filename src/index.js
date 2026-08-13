@@ -62,19 +62,34 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName, options } = interaction;
-  const member = interaction.member;
-  console.log(`[CMD] /${commandName} từ ${member?.user?.tag ?? '?'} trong ${interaction.guild?.name ?? '?'}`);
 
-  // Guard: interaction phải đến từ guild và có member (tránh crash khi dùng
-  // trong DM hoặc guild chưa cache member -> member undefined).
-  if (!interaction.inGuild() || !member) {
+  // Guard: phải đến từ guild (tránh crash trong DM).
+  if (!interaction.inGuild()) {
     return interaction.reply({ content: '⚠️ Lệnh này chỉ dùng được trong server.', flags: 64 }).catch(() => {});
   }
 
-  // Lấy voice channel an toàn: member.voice có thể undefined nếu guild chưa
-  // cache voice states (server mới bot vừa join). Thử member.voice trước,
-  // fallback sang guild voiceStates cache.
-  let voiceChannel = member?.voice?.channel ?? interaction.guild?.voiceStates?.cache?.get(member.id)?.channel ?? undefined;
+  // Lấy guild + member tin cậy: khi guild chưa cache (bot vừa join server mới,
+  // hoặc cache bị đẩy ra), interaction.guild/member là partial/raw -> member.voice
+  // undefined -> bot báo "cần vào voice" dù user đã ở trong voice. Fetch qua REST
+  // để đảm bảo có voice state đầy đủ.
+  let guild = interaction.guild;
+  let member = interaction.member;
+  try {
+    if (!guild) guild = await client.guilds.fetch(interaction.guildId);
+    if (!member || !member.voice) {
+      member = await guild.members.fetch(interaction.user.id);
+    }
+  } catch (e) {
+    console.error('[CMD] fetch guild/member lỗi:', e.message);
+  }
+
+  console.log(`[CMD] /${commandName} từ ${member?.user?.tag ?? interaction.user?.tag ?? '?'} trong ${guild?.name ?? '?'}`);
+
+  if (!member) {
+    return interaction.reply({ content: '⚠️ Không xác định được thành viên. Thử lại sau.', flags: 64 }).catch(() => {});
+  }
+
+  const voiceChannel = member?.voice?.channel ?? guild?.voiceStates?.cache?.get(member.id)?.channel ?? undefined;
 
   if (['play', 'skip', 'stop', 'pause', 'resume'].includes(commandName) && !voiceChannel) {
     return interaction.reply({ content: '⚠️ Bạn cần vào voice channel trước.', flags: 64 }).catch(() => {});
