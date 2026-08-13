@@ -4,6 +4,13 @@ Log phát triển của dự án theo thời gian — **mới nhất ở trên**
 
 ---
 
+## 2026-08-13 (fix changelog hook loop)
+
+### Chore
+- **Fix hook Stop lặp vô hạn** — hook nhắc cập nhật changelog fire mỗi lần turn kết thúc khi còn thay đổi nguồn, không biết changelog đã cập nhật chưa → chặn turn kết thúc 9 lần liên tiếp. Chuyển sang script `.claude/hooks/changelog-check.sh`: chỉ fire khi changelog **cũ hơn** thay đổi nguồn mới nhất (so mtime). Sau khi cập nhật changelog, hook im lặng, turn kết thúc bình thường.
+
+---
+
 ## 2026-08-13 (fix yt-dlp null crash)
 
 ### Fixes
