@@ -6,7 +6,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const commandBuilders = [
   new SlashCommandBuilder()
     .setName('play')
-    .setDescription('Phát nhạc từ YouTube hoặc SoundCloud (tên bài hát hoặc link)')
+    .setDescription('Phát nhạc từ YouTube/SoundCloud (tên bài, link video, hoặc link playlist YouTube)')
     .addStringOption((opt) =>
       opt
         .setName('query')

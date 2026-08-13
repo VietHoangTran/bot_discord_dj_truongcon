@@ -165,12 +165,22 @@ client.on('interactionCreate', async (interaction) => {
           return interaction.editReply('❌ Bạn đang ở **Stage Channel**. Bot chỉ hoạt động với **Voice Channel** thường. Hãy tạo/đổi sang Voice Channel (mặc định) rồi thử lại.');
         }
 
-        // Làm sạch link YouTube (bỏ tham số ?si=, &list=RD..., &start_radio=, ?t=...)
+        // Làm sạch link YouTube (bỏ tham số ?si=, &list=RD..., &start_radio=, ?t=...).
+        // NHƯNG giữ nguyên link playlist thật (list=PL/UU/FL/OL/LL/PU hoặc
+        // /playlist?list=...) để DisTube resolve toàn bộ danh sách. &list=RD... là
+        // autoplay radio (động, không phải playlist user chọn) -> vẫn strip.
         let cleanQuery = query;
-        const ytMatch = query.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/);
-        if (ytMatch) {
-          cleanQuery = `https://www.youtube.com/watch?v=${ytMatch[1]}`;
-          console.log(`[PLAY] Link làm sạch: ${query} -> ${cleanQuery}`);
+        const isPlaylist =
+          /youtube\.com\/playlist\?list=/.test(query) ||
+          /[?&]list=(PL|UU|FL|OL|LL|PU)[A-Za-z0-9_-]{10,}/.test(query);
+        if (!isPlaylist) {
+          const ytMatch = query.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/);
+          if (ytMatch) {
+            cleanQuery = `https://www.youtube.com/watch?v=${ytMatch[1]}`;
+            console.log(`[PLAY] Link làm sạch: ${query} -> ${cleanQuery}`);
+          }
+        } else {
+          console.log(`[PLAY] Phát hiện playlist, giữ nguyên link: ${query}`);
         }
 
         await distube.play(voiceChannel, cleanQuery, {
@@ -240,6 +250,9 @@ distube
   })
   .on('addSong', (queue, song) => {
     queue.textChannel?.send(`✅ Đã thêm vào hàng chờ: **${song.name}**`);
+  })
+  .on('addList', (queue, playlist) => {
+    queue.textChannel?.send(`📃 Đã thêm playlist: **${playlist.name}** (${playlist.songs.length} bài) vào hàng chờ.`);
   })
   .on('error', (error, queue, song) => {
     console.error('[DisTube error]', error);
