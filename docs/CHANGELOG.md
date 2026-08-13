@@ -4,6 +4,14 @@ Log phát triển của dự án theo thời gian — **mới nhất ở trên**
 
 ---
 
+## 2026-08-13 (refactor src)
+
+### Chore
+- **Chia module `src/`** — tách `index.js` (~280 dòng) thành: `config.js` (env), `utils.js` (hàm thuần), `distube.js` (DisTube setup), `events.js` (sự kiện DisTube), `handlers.js` (slash commands). `index.js` giờ chỉ là entry mỏng.
+- **Thêm test** — `test/utils.test.js` (7 test) cho logic thuần: làm sạch link YouTube, parse whitelist, whitelist check. Chạy bằng `npm test` (`node --test`).
+
+---
+
 ## 2026-08-13 (docs & tooling)
 
 ### Chore

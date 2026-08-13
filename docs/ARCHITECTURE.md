@@ -7,15 +7,21 @@ Tổng quan kiến trúc hiện tại của bot Discord music. Xem [`DECISIONS.m
 ```
 bot_discord_vince/
 ├── src/
-│   ├── index.js            # File chính: client + slash commands + sự kiện DisTube
+│   ├── index.js            # Entry mỏng: khởi tạo client + distube, login
+│   ├── config.js           # Đọc + parse biến môi trường (whitelist, cookies)
+│   ├── utils.js            # Hàm thuần: làm sạch link YouTube, whitelist check (có test)
+│   ├── distube.js          # Khởi tạo DisTube + plugins + ffmpeg args
+│   ├── events.js           # Sự kiện DisTube (playSong, addSong, error, finish)
+│   ├── handlers.js         # Xử lý slash commands (interactionCreate)
 │   ├── commands.js         # Định nghĩa slash commands (dùng chung cho auto-register + deploy)
-│   └── deploy-commands.js  # Đăng ký slash commands thủ công (tùy chọn)
+│   └── deploy-commands.js # Đăng ký slash commands thủ công (tùy chọn)
+├── test/
+│   └── utils.test.js       # Test cho src/utils.js (node --test)
 ├── patches/
 │   └── @distube+yt-dlp+2.0.1.patch  # Patch @distube/yt-dlp (áp bởi patch-package)
 ├── docs/                   # Tài liệu phát triển (xem docs/README.md)
 ├── .claude/
-│   ├── settings.json       # Cấu hình Claude Code (env + hooks)
-│   └── skills/             # Skill tùy chỉnh (vd: update-changelog)
+│   └── skills/             # Skill tùy chỉnh (update-changelog, deploy, ...)
 ├── Dockerfile              # Build + chạy trên Railway
 ├── railway.json            # Cấu hình deploy Railway
 └── package.json
