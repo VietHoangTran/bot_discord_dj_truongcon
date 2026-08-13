@@ -24,6 +24,13 @@ const distube = new DisTube(client, {
   // né lỗi decipher của YouTube. update:false -> không tự download từ GitHub
   // lúc runtime (Railway hay bị rate-limit/403).
   plugins: [new SoundCloudPlugin(), new YtDlpPlugin({ update: false })],
+  // ffmpeg input args: set user-agent +referer khi nạp stream từ YouTube,
+  // tránh bị 403/blocked khiến ffmpeg thoát (FFMPEG_EXITED) trên Railway.
+  ffmpeg: {
+    args: {
+      input: ['-user_agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'],
+    },
+  },
 });
 
 client.once('clientReady', () => {
@@ -123,9 +130,17 @@ distube
   .on('addSong', (queue, song) => {
     queue.textChannel?.send(`✅ Đã thêm vào hàng chờ: **${song.name}**`);
   })
-  .on('error', (channel, error) => {
-    console.error(error);
-    channel?.send('❌ Lỗi khi phát nhạc, có thể video bị chặn hoặc private.');
+  .on('error', (error, queue, song) => {
+    console.error('[DisTube error]', error);
+    const textChannel = queue?.textChannel;
+    const name = song?.name ? ` **${song.name}**` : '';
+    let msg = `❌ Lỗi khi phát nhạc${name}.`;
+    // FFMPEG_EXITED thường do stream URL hết hạn (yt-dlp token có TTL) hoặc
+    // format không phát được -> gợi ý thử lại.
+    if (error?.errorCode === 'FFMPEG_EXITED') {
+      msg = `❌ Lỗi stream khi phát${name}. Link có thể hết hạn — thử \`/play\` lại.`;
+    }
+    textChannel?.send(msg).catch(() => {});
   })
   .on('finish', (queue) => {
     queue.textChannel?.send('📭 Hết bài trong hàng chờ.');
