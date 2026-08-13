@@ -4,6 +4,7 @@ const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
+const { commandsJSON } = require('./commands');
 
 // Khởi tạo libsodium cho mã hóa voice (tránh timeout 30s do thiếu encryptor)
 require('libsodium-wrappers');
@@ -37,8 +38,23 @@ const distube = new DisTube(client, {
   },
 });
 
-client.once('clientReady', () => {
+client.once('clientReady', async () => {
   console.log(`Bot đã online: ${client.user.tag}`);
+  // Tự đăng ký slash commands global (hiện ở TẤT CẢ server bot tham gia).
+  // Nếu set GUILD_ID trong .env, đăng ký vào 1 server đó (áp dụng ngay, dùng để test).
+  // Global command có thể mất tới 1h để Discord cập nhật ở server mới.
+  try {
+    const { GUILD_ID } = process.env;
+    if (GUILD_ID) {
+      await client.application.commands.set(commandsJSON, GUILD_ID);
+      console.log(`✅ Đã đăng ký guild commands vào ${GUILD_ID}`);
+    } else {
+      await client.application.commands.set(commandsJSON);
+      console.log('✅ Đã đăng ký global commands (mọi server)');
+    }
+  } catch (err) {
+    console.error('❌ Lỗi đăng ký slash commands:', err);
+  }
 });
 
 // Xử lý slash command
