@@ -62,17 +62,18 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const { commandName, member, options } = interaction;
+  console.log(`[CMD] /${commandName} từ ${member?.user?.tag ?? '?'} trong ${interaction.guild?.name ?? '?'}`);
 
   // Guard: interaction phải đến từ guild và có member (tránh crash khi dùng
   // trong DM hoặc guild chưa cache member -> member undefined).
   if (!interaction.inGuild() || !member) {
-    return interaction.reply({ content: '⚠️ Lệnh này chỉ dùng được trong server.', flags: 64 });
+    return interaction.reply({ content: '⚠️ Lệnh này chỉ dùng được trong server.', flags: 64 }).catch(() => {});
   }
 
   const voiceChannel = member.voice.channel;
 
   if (['play', 'skip', 'stop', 'pause', 'resume'].includes(commandName) && !voiceChannel) {
-    return interaction.reply({ content: '⚠️ Bạn cần vào voice channel trước.', flags: 64 });
+    return interaction.reply({ content: '⚠️ Bạn cần vào voice channel trước.', flags: 64 }).catch(() => {});
   }
 
   try {
@@ -132,9 +133,13 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.reply({ embeds: [embed] });
         break;
       }
+
+      default:
+        // Lệnh không nhận diện (vd: global command chưa propagate xong) -> vẫn reply.
+        await interaction.reply('⚠️ Lệnh chưa sẵn sàng, thử lại sau ít phút.');
     }
   } catch (err) {
-    console.error(err);
+    console.error('[CMD ERROR]', err);
     let msg = '❌ Có lỗi xảy ra, thử lại sau.';
     if (err.errorCode === 'VOICE_CONNECT_FAILED') {
       msg = '❌ Bot không vào được voice channel. Kiểm tra bot có quyền **Connect** và **Speak** trong server (Server Settings → Roles → bot role), và bạn đang ở trong voice channel.';
@@ -145,7 +150,7 @@ client.on('interactionCreate', async (interaction) => {
     } else if (err.errorCode === 'NO_RELATED_VIDEO') {
       msg = '❌ Không tìm được bài liên quan để autoplay.';
     }
-    interaction.deferred ? interaction.editReply(msg) : interaction.reply(msg);
+    interaction.deferred ? interaction.editReply(msg).catch(() => {}) : interaction.reply({ content: msg, flags: 64 }).catch(() => {});
   }
 });
 
