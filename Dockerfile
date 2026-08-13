@@ -21,12 +21,16 @@ WORKDIR /app
 # Copy package files và cài dependencies.
 # --ignore-scripts: bỏ postinstall của @distube/yt-dlp (cố download yt-dlp từ GitHub,
 # bị Railway rate-limit/403). Binary yt-dlp đã có sẵn ở /usr/local/bin từ bước trên.
-# Opus được rebuild riêng ở bước sau.
+# Patch + opus rebuild chạy tường minh ở bước sau.
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
-# Copy source code
+# Copy source code + patches (cần cho patch-package)
 COPY . .
+
+# Áp dụng patch cho @distube/yt-dlp: bỏ --no-call-home (đã bị yt-dlp mới deprecate,
+# warning ra stdout làm hỏng JSON.parse -> crash bot). Xem patches/@distube+yt-dlp+2.0.1.patch
+RUN npx patch-package
 
 # Đảm bảo opus build đúng
 RUN npm rebuild @discordjs/opus
