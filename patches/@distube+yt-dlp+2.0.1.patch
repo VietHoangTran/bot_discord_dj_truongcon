@@ -1,8 +1,8 @@
 diff --git a/node_modules/@distube/yt-dlp/dist/index.js b/node_modules/@distube/yt-dlp/dist/index.js
-index b17b126..624a593 100644
+index b17b126..c864f61 100644
 --- a/node_modules/@distube/yt-dlp/dist/index.js
 +++ b/node_modules/@distube/yt-dlp/dist/index.js
-@@ -144,10 +144,10 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+@@ -144,10 +144,11 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -11,11 +11,12 @@ index b17b126..624a593 100644
        skipDownload: true,
 -      simulate: true
 +      simulate: true,
-+      extractorArgs: "youtube:player_client=tv,ios,mweb,android"
++      extractorArgs: "youtube:player_client=tv,ios,mweb,android",
++      cookies: process.env.YOUTUBE_COOKIES_FILE || "/app/cookies.txt"
      }).catch((e2) => {
        throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
-@@ -174,11 +174,11 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+@@ -174,11 +175,12 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(song.url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -25,15 +26,16 @@ index b17b126..624a593 100644
        simulate: true,
 -      format: "ba/ba*"
 +      format: "ba/ba*",
-+      extractorArgs: "youtube:player_client=tv,ios,mweb,android"
++      extractorArgs: "youtube:player_client=tv,ios,mweb,android",
++      cookies: process.env.YOUTUBE_COOKIES_FILE || "/app/cookies.txt"
      }).catch((e2) => {
        throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
 diff --git a/node_modules/@distube/yt-dlp/dist/index.mjs b/node_modules/@distube/yt-dlp/dist/index.mjs
-index bf07337..1a6c321 100644
+index bf07337..87e1ce3 100644
 --- a/node_modules/@distube/yt-dlp/dist/index.mjs
 +++ b/node_modules/@distube/yt-dlp/dist/index.mjs
-@@ -115,10 +115,10 @@ var YtDlpPlugin = class extends PlayableExtractorPlugin {
+@@ -115,10 +115,11 @@ var YtDlpPlugin = class extends PlayableExtractorPlugin {
      const info = await json(url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -42,11 +44,12 @@ index bf07337..1a6c321 100644
        skipDownload: true,
 -      simulate: true
 +      simulate: true,
-+      extractorArgs: "youtube:player_client=tv,ios,mweb,android"
++      extractorArgs: "youtube:player_client=tv,ios,mweb,android",
++      cookies: process.env.YOUTUBE_COOKIES_FILE || "/app/cookies.txt"
      }).catch((e2) => {
        throw new DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
-@@ -145,11 +145,11 @@ var YtDlpPlugin = class extends PlayableExtractorPlugin {
+@@ -145,11 +146,12 @@ var YtDlpPlugin = class extends PlayableExtractorPlugin {
      const info = await json(song.url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -56,7 +59,8 @@ index bf07337..1a6c321 100644
        simulate: true,
 -      format: "ba/ba*"
 +      format: "ba/ba*",
-+      extractorArgs: "youtube:player_client=tv,ios,mweb,android"
++      extractorArgs: "youtube:player_client=tv,ios,mweb,android",
++      cookies: process.env.YOUTUBE_COOKIES_FILE || "/app/cookies.txt"
      }).catch((e2) => {
        throw new DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
