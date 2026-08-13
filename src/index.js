@@ -1,5 +1,30 @@
 require('dotenv').config();
 
+const fs = require('fs');
+const path = require('path');
+
+// Cookies YouTube để né bot detection ở Railway (IP datacenter bị YouTube chặn
+// "Sign in to confirm you're not a bot"). Truyền qua biến môi trường
+// YOUTUBE_COOKIES_B64 = base64 của file cookies.txt (Netscape format, export
+// từ browser đăng nhập tài khoản Google BURNER — KHÔNG dùng account chính).
+// Startup decode ra /app/cookies.txt + ghi yt-dlp config file để binary tự load
+// cookies mỗi lần DisTube plugin spawn yt-dlp (không cần patch plugin).
+const COOKIES_FILE = '/app/cookies.txt';
+const cookiesB64 = process.env.YOUTUBE_COOKIES_B64;
+if (cookiesB64) {
+  try {
+    fs.writeFileSync(COOKIES_FILE, Buffer.from(cookiesB64, 'base64'));
+    const configDir = path.join(process.env.HOME || '/root', '.config', 'yt-dlp');
+    fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(path.join(configDir, 'config'), `--cookies ${COOKIES_FILE}\n`);
+    console.log('✅ Đã nạp cookies YouTube (YOUTUBE_COOKIES_B64 -> /app/cookies.txt)');
+  } catch (e) {
+    console.error('❌ Lỗi ghi cookies.txt / yt-dlp config:', e.message);
+  }
+} else {
+  console.warn('⚠️ Không có YOUTUBE_COOKIES_B64 — YouTube có thể chặn bot trên IP datacenter (lỗi "Sign in to confirm you\'re not a bot").');
+}
+
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { DisTube } = require('distube');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
