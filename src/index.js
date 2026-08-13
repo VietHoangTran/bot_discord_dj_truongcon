@@ -9,6 +9,18 @@ const { commandsJSON } = require('./commands');
 // Khởi tạo libsodium cho mã hóa voice (tránh timeout 30s do thiếu encryptor)
 require('libsodium-wrappers');
 
+// Whitelist server: chỉ cho bot hoạt động ở các guild có ID trong ALLOWED_GUILD_IDS
+// (cách nhau bởi dấu phẩy). Lấy ID: Developer Mode Discord -> right-click server -> Copy Server ID.
+// Để trống = cho phép mọi server.
+// Ưu điểm so với global commands: đăng ký guild command -> lệnh hiện ngay (<1s),
+// guild luôn được cache nên không bị lỗi "Unknown Guild" / "cần vào voice".
+const ALLOWED_GUILD_IDS = (process.env.ALLOWED_GUILD_IDS || '')
+  .split(',')
+  .map((id) => id.trim())
+  .filter(Boolean);
+const whitelistEnabled = ALLOWED_GUILD_IDS.length > 0;
+const isGuildAllowed = (guildId) => !whitelistEnabled || ALLOWED_GUILD_IDS.includes(guildId);
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -40,14 +52,22 @@ const distube = new DisTube(client, {
 
 client.once('clientReady', async () => {
   console.log(`Bot đã online: ${client.user.tag}`);
-  // Tự đăng ký slash commands global (hiện ở TẤT CẢ server bot tham gia).
-  // Nếu set GUILD_ID trong .env, đăng ký vào 1 server đó (áp dụng ngay, dùng để test).
-  // Global command có thể mất tới 1h để Discord cập nhật ở server mới.
+  // Đăng ký slash commands:
+  // - Nếu có whitelist (ALLOWED_GUILD_IDS): đăng ký guild command vào từng guild được
+  //   phép -> lệnh hiện ngay (<1s), guild luôn cache (tránh lỗi Unknown Guild).
+  // - Nếu không whitelist: đăng ký global (mọi server, có thể mất 1h để propagate).
   try {
-    const { GUILD_ID } = process.env;
-    if (GUILD_ID) {
-      await client.application.commands.set(commandsJSON, GUILD_ID);
-      console.log(`✅ Đã đăng ký guild commands vào ${GUILD_ID}`);
+    if (whitelistEnabled) {
+      console.log(`Whitelist ${ALLOWED_GUILD_IDS.length} guild(s): ${ALLOWED_GUILD_IDS.join(', ')}`);
+      const guilds = client.guilds.cache.filter((g) => isGuildAllowed(g.id));
+      for (const [id, g] of guilds) {
+        try {
+          await client.application.commands.set(commandsJSON, id);
+          console.log(`✅ Đăng ký commands vào guild: ${g.name} (${id})`);
+        } catch (e) {
+          console.error(`❌ Lỗi đăng ký commands vào ${id}:`, e.message);
+        }
+      }
     } else {
       await client.application.commands.set(commandsJSON);
       console.log('✅ Đã đăng ký global commands (mọi server)');
@@ -55,12 +75,23 @@ client.once('clientReady', async () => {
   } catch (err) {
     console.error('❌ Lỗi đăng ký slash commands:', err);
   }
-  // Log các guild bot đang ở + khi join guild mới -> debug "Unknown Guild".
   console.log(`Guilds trong cache (${client.guilds.cache.size}):`, client.guilds.cache.map((g) => g.name).join(', ') || '(trống)');
 });
 
-client.on('guildCreate', (guild) => {
-  console.log(`[GUILD JOIN] Bot được thêm vào: ${guild.name} (id=${guild.id}, members=${guild.memberCount})`);
+// Khi bot được thêm vào guild mới: nếu guild nằm trong whitelist -> đăng ký commands
+// ngay (lệnh hiện tức thì). Nếu không -> bỏ qua (không đăng ký, không hoạt động).
+client.on('guildCreate', async (guild) => {
+  console.log(`[GUILD JOIN] Bot được thêm vào: ${guild.name} (id=${guild.id})`);
+  if (whitelistEnabled && isGuildAllowed(guild.id)) {
+    try {
+      await client.application.commands.set(commandsJSON, guild.id);
+      console.log(`✅ Đăng ký commands vào guild mới (whitelist): ${guild.name} (${guild.id})`);
+    } catch (e) {
+      console.error(`❌ Lỗi đăng ký commands vào guild mới ${guild.id}:`, e.message);
+    }
+  } else if (whitelistEnabled) {
+    console.log(`⏭️ Guild ${guild.name} (${guild.id}) không trong whitelist -> bot không hoạt động ở đây.`);
+  }
 });
 
 client.on('guildDelete', (guild) => {
@@ -78,42 +109,22 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.reply({ content: '⚠️ Lệnh này chỉ dùng được trong server.', flags: 64 }).catch(() => {});
   }
 
-  // Lấy guild + member tin cậy: khi guild chưa cache (bot vừa join server mới,
-  // hoặc cache bị đẩy ra), interaction.guild/member là partial/raw -> member.voice
-  // undefined -> bot báo "cần vào voice" dù user đã ở trong voice. Fetch qua REST
-  // để đảm bảo có voice state đầy đủ. Có thể "Unknown Guild" ngay sau restart ->
-  // thử lại vài lần.
-  let guild = interaction.guild;
-  let member = interaction.member;
-  console.log(`[CMD] /${commandName} từ ${interaction.user?.tag ?? '?'} | guildId=${interaction.guildId} | cached=${!!guild}`);
-
-  if (!guild) {
-    for (let i = 0; i < 3; i++) {
-      try {
-        guild = await client.guilds.fetch(interaction.guildId);
-        if (guild) break;
-      } catch (e) {
-        console.error(`[CMD] fetch guild thử ${i + 1}/3 lỗi:`, e.message);
-        await new Promise((r) => setTimeout(r, 1000));
-      }
-    }
+  // Whitelist: chỉ guild trong ALLOWED_GUILD_IDS mới dùng được bot.
+  if (!isGuildAllowed(interaction.guildId)) {
+    console.log(`[CMD] /${commandName} bị từ chối: guild ${interaction.guildId} không trong whitelist`);
+    return interaction.reply({ content: '⚠️ Bot này không được phép chạy ở server này.', flags: 64 }).catch(() => {});
   }
 
-  try {
-    if (guild && (!member || !member.voice)) {
-      member = await guild.members.fetch(interaction.user.id);
-    }
-  } catch (e) {
-    console.error('[CMD] fetch member lỗi:', e.message);
-  }
-
-  console.log(`[CMD] guild=${guild?.name ?? '?'} member=${member?.user?.tag ?? '?'}`);
+  const { member } = interaction;
+  console.log(`[CMD] /${commandName} từ ${member?.user?.tag ?? interaction.user?.tag ?? '?'} trong ${interaction.guild?.name ?? '?'}`);
 
   if (!member) {
     return interaction.reply({ content: '⚠️ Không xác định được thành viên. Thử lại sau.', flags: 64 }).catch(() => {});
   }
 
-  const voiceChannel = member?.voice?.channel ?? guild?.voiceStates?.cache?.get(member.id)?.channel ?? undefined;
+  // Lấy voice channel an toàn: member.voice có thể undefined khi chưa cache voice
+  // states. Fallback sang guild voiceStates cache.
+  const voiceChannel = member?.voice?.channel ?? interaction.guild?.voiceStates?.cache?.get(member.id)?.channel ?? undefined;
 
   if (['play', 'skip', 'stop', 'pause', 'resume'].includes(commandName) && !voiceChannel) {
     return interaction.reply({ content: '⚠️ Bạn cần vào voice channel trước.', flags: 64 }).catch(() => {});
