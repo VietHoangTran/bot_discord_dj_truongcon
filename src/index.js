@@ -61,7 +61,8 @@ client.once('clientReady', async () => {
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  const { commandName, member, options } = interaction;
+  const { commandName, options } = interaction;
+  const member = interaction.member;
   console.log(`[CMD] /${commandName} từ ${member?.user?.tag ?? '?'} trong ${interaction.guild?.name ?? '?'}`);
 
   // Guard: interaction phải đến từ guild và có member (tránh crash khi dùng
@@ -70,7 +71,10 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.reply({ content: '⚠️ Lệnh này chỉ dùng được trong server.', flags: 64 }).catch(() => {});
   }
 
-  const voiceChannel = member.voice.channel;
+  // Lấy voice channel an toàn: member.voice có thể undefined nếu guild chưa
+  // cache voice states (server mới bot vừa join). Thử member.voice trước,
+  // fallback sang guild voiceStates cache.
+  let voiceChannel = member?.voice?.channel ?? interaction.guild?.voiceStates?.cache?.get(member.id)?.channel ?? undefined;
 
   if (['play', 'skip', 'stop', 'pause', 'resume'].includes(commandName) && !voiceChannel) {
     return interaction.reply({ content: '⚠️ Bạn cần vào voice channel trước.', flags: 64 }).catch(() => {});
