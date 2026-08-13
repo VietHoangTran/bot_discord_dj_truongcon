@@ -71,19 +71,33 @@ client.on('interactionCreate', async (interaction) => {
   // Lấy guild + member tin cậy: khi guild chưa cache (bot vừa join server mới,
   // hoặc cache bị đẩy ra), interaction.guild/member là partial/raw -> member.voice
   // undefined -> bot báo "cần vào voice" dù user đã ở trong voice. Fetch qua REST
-  // để đảm bảo có voice state đầy đủ.
+  // để đảm bảo có voice state đầy đủ. Có thể "Unknown Guild" ngay sau restart ->
+  // thử lại vài lần.
   let guild = interaction.guild;
   let member = interaction.member;
+  console.log(`[CMD] /${commandName} từ ${interaction.user?.tag ?? '?'} | guildId=${interaction.guildId} | cached=${!!guild}`);
+
+  if (!guild) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        guild = await client.guilds.fetch(interaction.guildId);
+        if (guild) break;
+      } catch (e) {
+        console.error(`[CMD] fetch guild thử ${i + 1}/3 lỗi:`, e.message);
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+    }
+  }
+
   try {
-    if (!guild) guild = await client.guilds.fetch(interaction.guildId);
-    if (!member || !member.voice) {
+    if (guild && (!member || !member.voice)) {
       member = await guild.members.fetch(interaction.user.id);
     }
   } catch (e) {
-    console.error('[CMD] fetch guild/member lỗi:', e.message);
+    console.error('[CMD] fetch member lỗi:', e.message);
   }
 
-  console.log(`[CMD] /${commandName} từ ${member?.user?.tag ?? interaction.user?.tag ?? '?'} trong ${guild?.name ?? '?'}`);
+  console.log(`[CMD] guild=${guild?.name ?? '?'} member=${member?.user?.tag ?? '?'}`);
 
   if (!member) {
     return interaction.reply({ content: '⚠️ Không xác định được thành viên. Thử lại sau.', flags: 64 }).catch(() => {});
