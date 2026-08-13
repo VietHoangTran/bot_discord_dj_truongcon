@@ -55,6 +55,16 @@ client.once('clientReady', async () => {
   } catch (err) {
     console.error('❌ Lỗi đăng ký slash commands:', err);
   }
+  // Log các guild bot đang ở + khi join guild mới -> debug "Unknown Guild".
+  console.log(`Guilds trong cache (${client.guilds.cache.size}):`, client.guilds.cache.map((g) => g.name).join(', ') || '(trống)');
+});
+
+client.on('guildCreate', (guild) => {
+  console.log(`[GUILD JOIN] Bot được thêm vào: ${guild.name} (id=${guild.id}, members=${guild.memberCount})`);
+});
+
+client.on('guildDelete', (guild) => {
+  console.log(`[GUILD LEAVE] Bot bị xóa khỏi: ${guild?.name ?? '?'} (id=${guild?.id})`);
 });
 
 // Xử lý slash command
