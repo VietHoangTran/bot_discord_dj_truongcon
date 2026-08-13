@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "deploy": "node src/deploy-commands.js",
+    "test": "node --test",
     "postinstall": "patch-package"
   },
   "keywords": [

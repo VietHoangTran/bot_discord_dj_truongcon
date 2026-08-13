@@ -167,7 +167,11 @@ pm2 stop music-bot      # dừng
 bot_discord_vince/
 ├── src/
 │   ├── index.js            # File chính: client + slash commands + sự kiện DisTube
-│   └── deploy-commands.js  # Đăng ký slash commands
+│   ├── commands.js         # Định nghĩa slash commands (dùng chung)
+│   └── deploy-commands.js  # Đăng ký slash commands (tùy chọn)
+├── patches/                # Patch @distube/yt-dlp (áp bởi patch-package)
+├── docs/                   # Tài liệu phát triển (xem docs/README.md)
+├── .claude/                # Cấu hình Claude Code (settings + skills)
 ├── .env                    # Token (không commit lên Git)
 ├── .gitignore
 └── package.json
