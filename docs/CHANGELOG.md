@@ -4,6 +4,13 @@ Log phát triển của dự án theo thời gian — **mới nhất ở trên**
 
 ---
 
+## 2026-08-13 (fix yt-dlp null crash)
+
+### Fixes
+- **Fix crash `/play` khi yt-dlp trả `null`** — với `--ignore-errors`, khi extract 1 video đơn thất bại (bot-detect trên IP datacenter), yt-dlp in `null` ra stdout → `isPlaylist(null)` crash `Cannot read properties of null (reading 'entries')`. Thêm guard `if (!info)` trong `resolve()` của `@distube/yt-dlp` (cả `index.js`/`index.mjs` + patch) để ném `DisTubeError` rõ ràng thay vì `TypeError`.
+
+---
+
 ## 2026-08-13 (refactor src)
 
 ### Chore

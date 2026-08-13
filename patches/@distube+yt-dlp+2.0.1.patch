@@ -33,7 +33,7 @@ index b17b126..62ae470 100644
      });
      process2.on("error", reject);
    });
-@@ -144,19 +153,24 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+@@ -144,19 +153,28 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -48,6 +48,10 @@ index b17b126..62ae470 100644
      }).catch((e2) => {
        throw new import_distube.DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
++    // --ignore-errors in ra `null` khi extract 1 video thất bại (vd bot-detect trên
++    // IP datacenter). Guard trước khi gọi isPlaylist(info) để tránh crash
++    // `Cannot read properties of null (reading 'entries')`.
++    if (!info) throw new import_distube.DisTubeError("YTDLP_ERROR", "yt-dlp returned no info (extraction failed)");
      if (isPlaylist(info)) {
 -      if (info.entries.length === 0) throw new import_distube.DisTubeError("YTDLP_ERROR", "The playlist is empty");
 +      // Bỏ các entry null (entry bị lỗi khi --ignore-errors, vd bot-detect) trước
@@ -112,7 +116,7 @@ index bf07337..4579730 100644
      });
      process2.on("error", reject);
    });
-@@ -115,19 +124,24 @@ var YtDlpPlugin = class extends PlayableExtractorPlugin {
+@@ -115,19 +124,28 @@ var YtDlpPlugin = class extends PlayableExtractorPlugin {
      const info = await json(url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -127,6 +131,10 @@ index bf07337..4579730 100644
      }).catch((e2) => {
        throw new DisTubeError("YTDLP_ERROR", `${e2.stderr || e2}`);
      });
++    // --ignore-errors in ra `null` khi extract 1 video thất bại (vd bot-detect trên
++    // IP datacenter). Guard trước khi gọi isPlaylist(info) để tránh crash
++    // `Cannot read properties of null (reading 'entries')`.
++    if (!info) throw new DisTubeError("YTDLP_ERROR", "yt-dlp returned no info (extraction failed)");
      if (isPlaylist(info)) {
 -      if (info.entries.length === 0) throw new DisTubeError("YTDLP_ERROR", "The playlist is empty");
 +      // Bỏ các entry null (entry bị lỗi khi --ignore-errors, vd bot-detect) trước
