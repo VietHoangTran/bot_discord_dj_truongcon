@@ -4,6 +4,20 @@ Log phát triển của dự án theo thời gian — **mới nhất ở trên**
 
 ---
 
+## 2026-08-14 (now playing UI)
+
+### Features
+- **Giao diện "đang phát"** — khi phát bài, bot gửi embed hiển thị bài đang phát + 5 bài sắp phát + âm lượng, kèm nút bấm điều khiển (⏮️ ⏯️ ⏭️ ⏹️). Ai trong voice channel đều bấm được. Embed tự cập nhật khi đổi bài (edit message cũ thay vì gửi mới, tránh spam). Nút tự disable sau 15 phút. Module mới `src/nowPlaying.js`.
+
+---
+
+## 2026-08-14 (volume command)
+
+### Features
+- **Thêm lệnh `/volume`** — chỉnh âm lượng phát nhạc (0-200). Không truyền `level` thì hiện mức hiện tại. Yêu cầu phải ở trong voice channel (thêm vào `VOICE_COMMANDS`).
+
+---
+
 ## 2026-08-13 (fix changelog hook loop)
 
 ### Chore
