@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js');
 const { cleanYouTubeLink } = require('./utils');
 
 // Các lệnh yêu cầu phải ở trong voice channel.
-const VOICE_COMMANDS = ['play', 'skip', 'stop', 'pause', 'resume'];
+const VOICE_COMMANDS = ['play', 'skip', 'stop', 'pause', 'resume', 'volume'];
 
 function createInteractionHandler({ distube, isGuildAllowed }) {
   return async function handleInteraction(interaction) {
@@ -106,6 +106,20 @@ function createInteractionHandler({ distube, isGuildAllowed }) {
             .join('\n');
           const embed = new EmbedBuilder().setTitle('Hàng chờ phát nhạc').setDescription(list);
           await interaction.reply({ embeds: [embed] });
+          break;
+        }
+
+        case 'volume': {
+          const queue = distube.getQueue(interaction);
+          if (!queue) return interaction.reply('📭 Chưa có bài nào đang phát.');
+
+          const level = options.getInteger('level');
+          if (level === null) {
+            return interaction.reply(`🔊 Âm lượng hiện tại: **${queue.volume}**`);
+          }
+
+          distube.setVolume(interaction, level);
+          await interaction.reply(`🔊 Đã chỉnh âm lượng thành **${level}**`);
           break;
         }
 

@@ -18,6 +18,17 @@ const commandBuilders = [
   new SlashCommandBuilder().setName('pause').setDescription('Tạm dừng bài hát'),
   new SlashCommandBuilder().setName('resume').setDescription('Phát tiếp bài đang tạm dừng'),
   new SlashCommandBuilder().setName('queue').setDescription('Xem danh sách hàng chờ'),
+  new SlashCommandBuilder()
+    .setName('volume')
+    .setDescription('Chỉnh âm lượng phát nhạc (0-200)')
+    .addIntegerOption((opt) =>
+      opt
+        .setName('level')
+        .setDescription('Mức âm lượng (0-200, mặc định 100)')
+        .setMinValue(0)
+        .setMaxValue(200)
+        .setRequired(false),
+    ),
 ];
 
 // Dạng JSON để gửi lên Discord API (REST.put cần mảng JSON).
