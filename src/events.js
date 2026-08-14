@@ -1,8 +1,28 @@
 // Đăng ký các sự kiện DisTube (thông báo vào text channel).
+const { buildNowPlayingEmbed, attachNowPlayingControls } = require('./nowPlaying');
+
 function registerDisTubeEvents(distube) {
   distube
     .on('playSong', (queue, song) => {
-      queue.textChannel?.send(`🎶 Đang phát: **${song.name}** - \`${song.formattedDuration}\``);
+      // Gửi embed "đang phát" + nút bấm. Nếu đã có message đang phát cho guild
+      // này thì edit lại thay vì gửi mới (tránh spam khi đổi bài liên tục).
+      const channel = queue.textChannel;
+      if (!channel) return;
+
+      if (queue.nowPlayingMessage) {
+        queue.nowPlayingMessage
+          .edit({ embeds: [buildNowPlayingEmbed(queue)] })
+          .catch(() => {});
+        return;
+      }
+
+      channel
+        .send({ embeds: [buildNowPlayingEmbed(queue)] })
+        .then((msg) => {
+          queue.nowPlayingMessage = msg;
+          attachNowPlayingControls(msg, queue, distube);
+        })
+        .catch(() => {});
     })
     .on('addSong', (queue, song) => {
       queue.textChannel?.send(`✅ Đã thêm vào hàng chờ: **${song.name}**`);
@@ -25,6 +45,8 @@ function registerDisTubeEvents(distube) {
       textChannel?.send(msg).catch(() => {});
     })
     .on('finish', (queue) => {
+      // Dọn tham chiếu message "đang phát" khi hết bài để không giữ embed cũ.
+      queue.nowPlayingMessage = undefined;
       queue.textChannel?.send('📭 Hết bài trong hàng chờ.');
     });
 }
