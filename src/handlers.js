@@ -1,6 +1,7 @@
 // Xử lý slash commands (interactionCreate). Nhận dependencies qua tham số để dễ test.
 const { EmbedBuilder } = require('discord.js');
 const { cleanYouTubeLink } = require('./utils');
+const { setVolume } = require('./volume');
 
 // Các lệnh yêu cầu phải ở trong voice channel.
 const VOICE_COMMANDS = ['play', 'skip', 'stop', 'pause', 'resume', 'volume'];
@@ -118,6 +119,8 @@ function createInteractionHandler({ distube, isGuildAllowed }) {
             return interaction.reply(`🔊 Âm lượng hiện tại: **${queue.volume}**`);
           }
 
+          // Lưu theo guild để áp dụng cho toàn bộ bot (không reset theo từng bài).
+          setVolume(interaction.guildId, level);
           distube.setVolume(interaction, level);
           await interaction.reply(`🔊 Đã chỉnh âm lượng thành **${level}**`);
           break;

@@ -4,6 +4,13 @@ Log phát triển của dự án theo thời gian — **mới nhất ở trên**
 
 ---
 
+## 2026-08-18 (volume theo guild)
+
+### Features
+- **Âm lượng mặc định 100 và áp dụng cho toàn bộ bot** — trước đây `/volume` chỉ có tác dụng trong phiên phát hiện tại (DisTube reset về 50 mỗi khi tạo queue mới). Giờ volume được lưu theo guild (mặc định 100) và tự áp lại mỗi khi queue mới được tạo (sự kiện `initQueue`). Module mới `src/volume.js` + test.
+
+---
+
 ## 2026-08-14 (now playing UI)
 
 ### Features

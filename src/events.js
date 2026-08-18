@@ -1,8 +1,15 @@
 // Đăng ký các sự kiện DisTube (thông báo vào text channel).
 const { buildNowPlayingEmbed, attachNowPlayingControls } = require('./nowPlaying');
+const { getVolume } = require('./volume');
 
 function registerDisTubeEvents(distube) {
   distube
+    // Queue mới được tạo -> áp lại âm lượng đã lưu cho guild (mặc định 100).
+    // DisTube reset volume về 50 mỗi khi tạo queue mới, nên không áp lại thì
+    // /volume chỉ có tác dụng trong phiên phát hiện tại.
+    .on('initQueue', (queue) => {
+      queue.setVolume(getVolume(queue.id));
+    })
     .on('playSong', (queue, song) => {
       // Gửi embed "đang phát" + nút bấm. Nếu đã có message đang phát cho guild
       // này thì edit lại thay vì gửi mới (tránh spam khi đổi bài liên tục).
